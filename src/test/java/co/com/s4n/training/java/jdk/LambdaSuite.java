@@ -14,6 +14,32 @@ public class LambdaSuite {
         int metodoDeEjemplo(int x, int y);
     }
 
+    @FunctionalInterface
+    interface InterfaceCon4Supplier{
+        Consumer<Integer> metodoAEjecutar(Supplier<Integer> s1,Supplier<Integer> s2, Supplier<Integer> s3);
+    }
+
+    @Test
+    public void testEjercicio(){
+        InterfaceCon4Supplier i = (x,y,z) ->{
+            Integer parcial = x.get()+y.get()+z.get();
+            Consumer<Integer> c = n-> {
+                Integer suma = parcial.intValue() +n;
+            };
+            return c;
+        };
+        Supplier<Integer> s1  = () -> 1;
+        Supplier<Integer> s2  = () -> 2;
+        Supplier<Integer> s3  = () -> 3;
+
+        Consumer <Integer> consumer = i.metodoAEjecutar(s1,s2,s3);
+
+        consumer.accept(new Integer(9));
+
+
+    }
+
+
     class ClaseDeEjemplo{
         public int metodoDeEjemplo1(int z, InterfaceDeEjemplo i){
             return z + i.metodoDeEjemplo(1,2);
