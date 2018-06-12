@@ -42,6 +42,18 @@ public class LambdaSuite {
     }
 
     @Test
+    public void usarUnaInterfaceFuncional3(){
+
+        InterfaceDeEjemplo i = (x,y)->x+y+1;
+
+        ClaseDeEjemplo instancia = new ClaseDeEjemplo();
+
+        int resultado = instancia.metodoDeEjemplo1(1,i);
+
+        assertTrue(resultado==5);
+    }
+
+    @Test
     public void usarUnaInterfaceFuncional2(){
 
         BiFunction<Integer, Integer, Integer> f = (x, y) -> new Integer(x.intValue()+y.intValue());
@@ -53,12 +65,38 @@ public class LambdaSuite {
         assertTrue(resultado==4);
     }
 
+
+    @Test
+    public void usarUnaInterfaceFuncional4(){
+
+        BiFunction<Integer, Integer, Integer> funcion = (x, y) -> new Integer((x.intValue()+y.intValue())*2);
+
+        ClaseDeEjemplo instancia = new ClaseDeEjemplo();
+
+        int resultado = instancia.metodoDeEjemplo2(1,funcion);
+
+        assertTrue(resultado==7);
+    }
+
+
     class ClaseDeEjemplo2{
 
         public int metodoDeEjemplo2(int x, int y, IntBinaryOperator fn){
             return fn.applyAsInt(x,y);
         }
     }
+
+    @Test
+    public void usarUnaFuncionConTiposPrimitivos2(){
+        IntBinaryOperator f = (x, y) -> x + y;
+
+        ClaseDeEjemplo2 instancia = new ClaseDeEjemplo2();
+
+        int resultado = instancia.metodoDeEjemplo2(1,2,f);
+
+        assertEquals(3,resultado);
+    }
+
     @Test
     public void usarUnaFuncionConTiposPrimitivos(){
         IntBinaryOperator f = (x, y) -> x + y;
@@ -69,6 +107,8 @@ public class LambdaSuite {
 
         assertEquals(3,resultado);
     }
+
+
 
     class ClaseDeEjemplo3{
 
@@ -116,6 +156,22 @@ public class LambdaSuite {
         instancia.operarConConsumer(c1);
 
 
+    }
+
+    class ClaseDeEjemplo5{
+        public void operarConConsumer2(Consumer<Integer> consu, int i){
+            consu.accept(i);
+        }
+    }
+
+    @Test
+    public void usarUnaFuncionConConsumer2(){
+        Consumer<Integer> consumer1 = x -> {
+          System.out.println("El consumer tiene un :" + x);
+        };
+
+        ClaseDeEjemplo5 claseDeEjemplo5 = new ClaseDeEjemplo5();
+        claseDeEjemplo5.operarConConsumer2(consumer1,500);
     }
 
 }
