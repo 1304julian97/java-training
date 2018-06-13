@@ -73,7 +73,7 @@ public class LambdaSuite {
     @Test
     public void testInterface3Consumer(){
 
-        //String nombre = "";
+        //String nombre  = "";
         //String apellido1 ="";
         //String apellido2 = "";
         String[] nombre = new String[1];
