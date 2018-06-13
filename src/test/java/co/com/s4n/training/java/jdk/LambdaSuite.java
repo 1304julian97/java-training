@@ -1,6 +1,8 @@
 package co.com.s4n.training.java.jdk;
 
 import static org.junit.Assert.*;
+
+//import com.sun.xml.internal.fastinfoset.algorithm.IntegerEncodingAlgorithm;
 import org.junit.Test;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
@@ -39,6 +41,29 @@ public class LambdaSuite {
 
     }
 
+
+
+    @Test
+    public void testEjercicio2(){
+        InterfaceCon4Supplier inteface = (s1, s2,s3) ->{
+            Integer valorSuma = s1.get()*2 + s2.get()*3 + s3.get()*4;
+            System.out.println("Esta es la suma de la ejecución sin el consumer:"+valorSuma);
+            Consumer<Integer> consumer = n-> {
+                Integer suma = valorSuma.intValue() + n;
+                System.out.println("Esta es la suma de un consumer (accept)"+(suma));
+            };
+            return consumer;
+        };
+
+        Supplier<Integer> s1 = () -> {return 1;};
+        Supplier<Integer> s2 = () -> {return 2;};
+        Supplier<Integer> s3 = () -> {return 3;};
+
+        Consumer<Integer> con = inteface.metodoAEjecutar(s1,s2,s3);
+        con.accept(10);
+
+
+    }
 
     class ClaseDeEjemplo{
         public int metodoDeEjemplo1(int z, InterfaceDeEjemplo i){
