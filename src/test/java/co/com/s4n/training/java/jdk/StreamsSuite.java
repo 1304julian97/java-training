@@ -48,6 +48,51 @@ public class StreamsSuite {
     }
 
     @Test
+    public void testStreams5(){
+        List<String> lista = new ArrayList<>();
+        Optional<String> first = lista
+                .stream()
+                .findFirst();
+
+
+
+        assertEquals("NONE",first.orElseGet(()->"NONE"));
+
+    }
+
+    class Raton {
+        String color;
+        String tamano;
+
+        Raton(String color, String tamano){
+            this.color = color;
+            this.tamano = tamano;
+        }
+
+    }
+
+    @Test
+    public void testRaton(){
+        Raton r1 = new Raton("negro","pequeno");
+        Raton r2 = new Raton("blanco","pequeno");
+        Raton r3 = new Raton("azul","Grande");
+        Raton r4 = new Raton("gris","muy pequeno");
+
+        List<Raton> listaRatones = new ArrayList<>();
+        listaRatones.add(r1);
+        listaRatones.add(r2);
+        listaRatones.add(r3);
+        listaRatones.add(r4);
+
+        Stream<Raton> streamRaton = listaRatones.stream();
+        List<Raton> listaFiltrada = streamRaton.
+                filter(raton -> (raton.color.equals("negro") || raton.color.equals("gris"))).collect(Collectors.toList());//.
+                //map(raton -> raton.tamano = "GRANDE");
+
+
+    }
+
+    @Test
     public void testStreams3(){
         Optional<String> first = Stream.of("a1", "a2", "a3")
                 .findFirst();
@@ -64,6 +109,14 @@ public class StreamsSuite {
         assertEquals(1,first.orElseGet(()->666));
 
     }
+
+    @Test
+    public void testStreams110(){
+        IntStream first =IntStream.range(1, 4);
+        List<Integer> resCollect = first.boxed().collect(Collectors.toList());
+
+    }
+
 
 
     @Test
@@ -84,6 +137,29 @@ public class StreamsSuite {
                 .max();
 
         assertEquals(3,max.orElseGet(()->666));
+
+
+    }
+
+    @Test
+    public void testStreams111(){
+
+        List<String> lista = new ArrayList<>();
+        lista.add("a1");
+        lista.add("a2");
+        lista.add("a3");
+
+        int mayor = 0;
+        for(String s : lista)
+        {
+            int numeroConvertidoDeLista = Integer.parseInt(s.substring(1));
+            if(mayor < numeroConvertidoDeLista)
+            {
+                mayor = numeroConvertidoDeLista;
+            }
+        }
+
+        assertEquals(3,mayor);
 
 
     }
@@ -194,9 +270,11 @@ public class StreamsSuite {
         // Cuántos elementos pasan por el stream?
         boolean b = Stream.of("d2", "a2", "b1", "b3", "c")
                 .map(s -> {
+                    System.out.println("------------------------Llegó: "+s);
                     return s.toUpperCase();
                 })
                 .anyMatch(s -> {
+                    System.out.println("-----------------------Llegó: "+s);
                     return s.startsWith("A");
                 });
 
@@ -221,8 +299,14 @@ public class StreamsSuite {
 
     @Test
     public void testStreams13() {
-        //TODO: cambia el orden de map y filter
-        assertTrue(true);
+        List<String> collect = Stream.of("d2", "a2", "b1", "b3", "c").
+                filter(s -> s.startsWith("A"))
+                .map(s -> {
+                    return s.toUpperCase();
+                }).collect(Collectors.toList());
+
+        assertTrue(collect.size()==0);
+        assertFalse(collect.contains("A2"));
     }
 
     @Test(expected = java.lang.IllegalStateException.class)
@@ -248,8 +332,8 @@ public class StreamsSuite {
         boolean b = streamSupplier.get().anyMatch(s -> true);
         boolean b1 = streamSupplier.get().noneMatch(s -> true);
 
-        assert(b);
-        assert(b1);
+        assertTrue(b);
+        assertFalse(b1);
 
     }
 
@@ -301,7 +385,9 @@ public class StreamsSuite {
                         .collect(Collectors.toList());
 
         assertTrue(filtered.size()==2);
-
+        System.out.println(filtered.get(1).name);
+        assertTrue(filtered.get(0).name.equals("Peter"));
+        //assertTrue(filtered.get(1).equals(new Person("Pamela",23)));
     }
 
     @Test
