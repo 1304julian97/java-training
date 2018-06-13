@@ -65,6 +65,54 @@ public class LambdaSuite {
 
     }
 
+    @FunctionalInterface
+    interface Interface3Consummer{
+        Supplier<String> concatenarTextoDeConsumer(Consumer<String> c1,Consumer<String> c2, Consumer<String> c3);
+    }
+
+    @Test
+    public void testInterface3Consumer(){
+
+        //String nombre = "";
+        //String apellido1 ="";
+        //String apellido2 = "";
+        String[] nombre = new String[1];
+        String[] apellido1 = new String[1];
+        String[] apellido2 = new String[1];
+        Consumer<String> con1 = s -> {
+            nombre[0] = s;
+        };
+
+        Consumer<String> con2 = s2 -> {
+            apellido1[0] = s2;
+        };
+
+        Consumer<String> con3 = s3 -> {
+            apellido2[0] = s3;
+        };
+
+
+        Interface3Consummer i3c = (c1,c2,c3) -> {
+            c1.accept("Julian");
+            c2.accept("Carvajal");
+            c3.accept("Montoya");
+            Supplier<String> s1 = () ->{
+                String miNombre = nombre[0]+apellido1[0]+apellido2[0];
+                return miNombre;
+            };
+            return s1;
+        };
+
+
+
+        Supplier<String> s1 = i3c.concatenarTextoDeConsumer(con1,con2,con3);
+
+        String resultado =  s1.get();
+        System.out.println("mi nombre es: "+resultado);
+
+
+    }
+
     class ClaseDeEjemplo{
         public int metodoDeEjemplo1(int z, InterfaceDeEjemplo i){
             return z + i.metodoDeEjemplo(1,2);
