@@ -16,6 +16,7 @@ import static io.vavr.Patterns.$None;
 import static io.vavr.Patterns.$Some;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import static io.vavr.API.Some;
@@ -25,6 +26,65 @@ import static org.junit.Assert.assertTrue;
 public class OptionSuite {
 
 
+
+    @Test
+    public void testConstruction1(){
+        Option<Integer> o = Option(1);
+        assertTrue(o.isDefined());
+        assertEquals(o,Some(1));
+    }
+
+    @Test
+    public void testConstruccion2(){
+        Option<Integer> o = Option(null);
+        assertEquals(o,Option.none());
+    }
+
+    private Boolean esParPosibleNull(int i)
+    {
+        if (i%2 == 0) return true;
+        else return null;
+    }
+
+    @Test
+    public void testConstruccion3(){
+        Option<Boolean> b = Option(esParPosibleNull(1));
+        assertEquals(b,Option.none());
+    }
+
+    private Integer identidadPosibleNull(int i)
+    {
+        if (i%2 == 0) return new Integer(i);
+        else return null;
+    }
+
+    @Test
+    public void testFilter(){
+        Option<Integer> b = Option(identidadPosibleNull(1));
+        Option<Integer> r = b.filter(x-> x.intValue()<4);
+        assertEquals(r,Option.none());
+    }
+
+    @Test
+    public void mapOption(){
+        Option<Integer> b = Option(identidadPosibleNull(8));
+        Option<Integer> r = b.map(x-> x-8);
+        assertEquals(r,Some(0));
+    }
+
+    @Test
+    public void mapOptionNull(){
+        Option<Integer> b = Option(identidadPosibleNull(3));
+        Option<Integer> r = b.map(x-> x-8);
+        assertEquals(r,Option.none());
+    }
+
+    @Test(expected = NoSuchElementException.class)
+    public void mapOptionGetNull(){
+        Option<Integer> b = Option(identidadPosibleNull(3));
+        Option<Integer> r = b.map(x-> x-8);
+        Integer finalNumber = r.get();
+    }
     /**
      * Un option se puede filtar, y mostrar un some() o un none si no encuentra el resultado
      */
@@ -223,4 +283,62 @@ public class OptionSuite {
                                    For(esPar(4), c -> Option(d+c))).toOption();
         assertEquals(integers,Some(6));
     }
+
+    @Test
+    public void flatMapInOption(){
+        Option<Integer> o1 = Option.of(1);
+        //Option<Option<Integer>> m = o1.map(i -> Option(i));
+        Option<Integer> op = o1.flatMap(i -> Option.of(1));
+    }
+
+    private Option<Integer> sumar(int a, int b){
+        return Option.of(a+b);
+    }
+
+
+    private Option<Integer> restar(int a, int b){
+        return a-b>0 ? Option.of(a-b): None();
+    }
+
+    @Test
+    public void flatMapInOptionCon4Flatmat(){
+        Option<Integer> retorno;
+        retorno = sumar(1,1).
+                flatMap(r->sumar(r,1).
+                    flatMap(x->sumar(x,1).
+                        flatMap(y->sumar(y,1).
+                                flatMap(z->sumar(z,1))
+                        )));
+
+        assertEquals(retorno.getOrElse(666).intValue(),6);
+    }
+
+    @Test
+    public void flatMapInOptionCon4FlatmatConNone(){
+        Option<Integer> retorno;
+        retorno = sumar(1,1).
+                flatMap(r->sumar(r,1).
+                        flatMap(x->restar(x,5).
+                                flatMap(y->sumar(y,1).
+                                        flatMap(z->sumar(z,1))
+                                )));
+
+        assertEquals(retorno,Option.none());
+        assertEquals(retorno.getOrElse(666).intValue(),666);
+    }
+
+    @Test
+    public void flatMapInOptionCon4FlatmatConFor(){
+        Option<Integer> retorno;
+        retorno =
+                For(sumar(1,1), x ->
+                For(sumar(x,5),y->
+                For(sumar(y,1), z->
+                For(sumar(z,1),a->sumar(a,y))))).toOption();
+
+        //assertEquals(retorno,Option.none());
+        assertEquals(retorno.getOrElse(666).intValue(),16);
+    }
+
+
 }
