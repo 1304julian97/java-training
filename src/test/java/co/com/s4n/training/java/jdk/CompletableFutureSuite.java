@@ -367,7 +367,7 @@ public class CompletableFutureSuite {
             return "Julian";
             },executorService);
 
-        f.thenApplyAsync(x->{
+        CompletableFuture <String> completableFuture2 = f.thenApplyAsync(x->{
             imprimirMensajeConFechaActual(pruebaNombre+" primer thenApply "+Thread.currentThread().getName()+" "+x);
             return x + " Carvajal";
         },executorService ).
@@ -375,9 +375,12 @@ public class CompletableFutureSuite {
                 imprimirMensajeConFechaActual(pruebaNombre+" Segundo Apply "+Thread.currentThread().getName()+ " "+y);
                 return y + " Montoya";
             },executorService);
+
+
+
         try {
             sleep(1000);
-            imprimirMensajeConFechaActual(pruebaNombre+" MiNombre es:  "+(String)f.get());
+            imprimirMensajeConFechaActual(pruebaNombre+" MiNombre es:  "+(String)completableFuture2.get());
         }catch (Exception e) {
             fail();
         }
