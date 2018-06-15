@@ -1,5 +1,6 @@
 package co.com.s4n.training.java.vavr;
 
+import co.com.s4n.training.java.FisicaMUATry;
 import io.vavr.CheckedFunction1;
 import io.vavr.CheckedFunction2;
 import io.vavr.Function1;
@@ -9,6 +10,7 @@ import static io.vavr.API.*;
 import static io.vavr.Predicates.*;
 import static io.vavr.Patterns.*;
 import static io.vavr.control.Try.success;
+import static java.lang.Float.NaN;
 import static junit.framework.TestCase.assertEquals;
 import io.vavr.PartialFunction;
 import java.util.ArrayList;
@@ -440,6 +442,35 @@ public class TrySuite {
     public void tesDivisionConRecuperacion(){
 
         assertFalse(divisionConRecuperacion(0,0).isFailure());
+    }
+
+    @Test
+    public void TestFisicaMUASucces(){
+        Double velocidadInicial = new Double(10.0);
+        Double aceleracion = new Double(20.0);
+        Double distancia = new Double(100);
+        Try<Double> resultado = FisicaMUATry.calcularVelocidadInicialAlCuadrado(velocidadInicial).
+                flatMap(velocidadAlCuadrado -> FisicaMUATry.calcular2VecesAceleracionXDistancia(aceleracion,distancia).
+                        flatMap(_2VecesAcelaracionXTiempo -> FisicaMUATry.calcularRaizCuadradaDeLaSumaDeDosNumeros(velocidadAlCuadrado,_2VecesAcelaracionXTiempo))
+                ).recoverWith(Exception.class,Try.of(()->-1.0));
+
+        assertTrue(resultado.isSuccess());
+        assertEquals(resultado.getOrElse(-100.0),64.0,1.0);
+    }
+
+
+    @Test
+    public void TestFisicaMUAFailure(){
+        Double velocidadInicial = new Double(5.0);
+        Double aceleracion = new Double(-2.0);
+        Double distancia = new Double(100);
+        Try<Double> resultado = FisicaMUATry.calcularVelocidadInicialAlCuadrado(velocidadInicial).
+                flatMap(velocidadAlCuadrado -> FisicaMUATry.calcular2VecesAceleracionXDistancia(aceleracion,distancia).
+                        flatMap(_2VecesAcelaracionXTiempo -> FisicaMUATry.calcularRaizCuadradaDeLaSumaDeDosNumeros(velocidadAlCuadrado,_2VecesAcelaracionXTiempo))
+                ).recoverWith(Exception.class,Try.of(()->-1.0));
+
+        assertFalse(resultado.isFailure());
+        assertEquals(resultado.getOrElse(-100.0),-1.0,1.0);
     }
 
 }
