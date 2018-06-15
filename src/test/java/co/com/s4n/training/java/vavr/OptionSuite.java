@@ -23,6 +23,7 @@ import java.util.concurrent.ExecutionException;
 
 import static io.vavr.API.Some;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 public class OptionSuite {
@@ -258,6 +259,22 @@ public class OptionSuite {
                                 y->FisicaMUA.calcularRaizCuadradaDeLaSumaDeDosNumeros(x,y))).toOption();
 
         assertEquals(resultado.getOrElse(-100.0),64.0,1.0);
+    }
+
+    @Test
+    public void testVelocidadFinalMUAForNone(){
+        Double velocidadInicial = new Double(1.0);
+        Double aceleracion = new Double(-20.0);
+        Double distancia = new Double(1);
+        //Option<Double> optionVelocidadInicialAlCuadrado = FisicaMUA.calcularVelocidadInicialAlCuadrado(velocidadInicial);
+        //Option<Double> option2VecesAceleracionXDistancia = FisicaMUA.calcular2VecesAceleracionXDistancia(aceleracion,distancia);
+        Option<Double> resultado =
+                For(FisicaMUA.calcular2VecesAceleracionXDistancia(aceleracion,distancia),
+                        x->For(FisicaMUA.calcularVelocidadInicialAlCuadrado(velocidadInicial),
+                                y->FisicaMUA.calcularRaizCuadradaDeLaSumaDeDosNumeros(x,y))).toOption();
+
+        assertEquals(resultado,None());
+        assertEquals(resultado.getOrElse(-100.0),-100.0,1.0);
     }
 
 

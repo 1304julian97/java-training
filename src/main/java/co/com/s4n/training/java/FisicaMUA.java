@@ -15,6 +15,13 @@ public class FisicaMUA {
 
     public static Option<Double> calcularRaizCuadradaDeLaSumaDeDosNumeros(Double numero1,Double numero2)
     {
-        return Option.of(Math.sqrt(numero1+numero2));
+        if(numero1+numero2 > 0)
+        {
+            return Option.of(Math.sqrt(numero1+numero2));
+        }
+        else
+        {
+            return Option.none();
+        }
     }
 }
