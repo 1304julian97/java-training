@@ -236,8 +236,11 @@ public class OptionSuite {
         //Option<Double> optionVelocidadInicialAlCuadrado = FisicaMUA.calcularVelocidadInicialAlCuadrado(velocidadInicial);
         //Option<Double> option2VecesAceleracionXDistancia = FisicaMUA.calcular2VecesAceleracionXDistancia(aceleracion,distancia);
         Option<Double> resultado = FisicaMUA.calcularVelocidadInicialAlCuadrado(velocidadInicial).
-                        flatMap(velocidadAlCuadrado -> FisicaMUA.calcularRaizCuadradaDeLaSumaDeDosNumeros(velocidadAlCuadrado,
-                                FisicaMUA.calcular2VecesAceleracionXDistancia(aceleracion,distancia).getOrElse(new Double(-100))));
+                                    flatMap(velocidadAlCuadrado -> FisicaMUA.calcular2VecesAceleracionXDistancia(aceleracion,distancia).
+                                    flatMap(_2VecesAcelaracionXTiempo -> FisicaMUA.calcularRaizCuadradaDeLaSumaDeDosNumeros(velocidadAlCuadrado,_2VecesAcelaracionXTiempo))
+                                    );
+                    //flatMap(velocidadAlCuadrado -> FisicaMUA.calcularRaizCuadradaDeLaSumaDeDosNumeros(velocidadAlCuadrado,
+                                //FisicaMUA.calcular2VecesAceleracionXDistancia(aceleracion,distancia).getOrElse(new Double(-100))));
 
         assertEquals(resultado.getOrElse(-100.0),64.0,1.0);
     }
@@ -250,10 +253,10 @@ public class OptionSuite {
         //Option<Double> optionVelocidadInicialAlCuadrado = FisicaMUA.calcularVelocidadInicialAlCuadrado(velocidadInicial);
         //Option<Double> option2VecesAceleracionXDistancia = FisicaMUA.calcular2VecesAceleracionXDistancia(aceleracion,distancia);
         Option<Double> resultado =
-                For(FisicaMUA.calcular2VecesAceleracionXDistancia(aceleracion,distancia),x->
-                    FisicaMUA.calcularRaizCuadradaDeLaSumaDeDosNumeros
-                            (x,FisicaMUA.calcularVelocidadInicialAlCuadrado(velocidadInicial).getOrElse(new Double(-100.0)))
-                ).toOption();
+                For(FisicaMUA.calcular2VecesAceleracionXDistancia(aceleracion,distancia),
+                        x->For(FisicaMUA.calcularVelocidadInicialAlCuadrado(velocidadInicial),
+                                y->FisicaMUA.calcularRaizCuadradaDeLaSumaDeDosNumeros(x,y))).toOption();
+
         assertEquals(resultado.getOrElse(-100.0),64.0,1.0);
     }
 
