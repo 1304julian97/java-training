@@ -460,7 +460,7 @@ public class TrySuite {
 
 
     @Test
-    public void TestFisicaMUAFailure(){
+    public void TestFisicaMUAFailureRecoverWith(){
         Double velocidadInicial = new Double(5.0);
         Double aceleracion = new Double(-2.0);
         Double distancia = new Double(100);
@@ -468,6 +468,20 @@ public class TrySuite {
                 flatMap(velocidadAlCuadrado -> FisicaMUATry.calcular2VecesAceleracionXDistancia(aceleracion,distancia).
                         flatMap(_2VecesAcelaracionXTiempo -> FisicaMUATry.calcularRaizCuadradaDeLaSumaDeDosNumeros(velocidadAlCuadrado,_2VecesAcelaracionXTiempo))
                 ).recoverWith(Exception.class,Try.of(()->-1.0));
+
+        assertFalse(resultado.isFailure());
+        assertEquals(resultado.getOrElse(-100.0),-1.0,1.0);
+    }
+
+    @Test
+    public void TestFisicaMUAFailureRecover(){
+        Double velocidadInicial = new Double(5.0);
+        Double aceleracion = new Double(-2.0);
+        Double distancia = new Double(100);
+        Try<Double> resultado = FisicaMUATry.calcularVelocidadInicialAlCuadrado(velocidadInicial).
+                flatMap(velocidadAlCuadrado -> FisicaMUATry.calcular2VecesAceleracionXDistancia(aceleracion,distancia).
+                        flatMap(_2VecesAcelaracionXTiempo -> FisicaMUATry.calcularRaizCuadradaDeLaSumaDeDosNumeros(velocidadAlCuadrado,_2VecesAcelaracionXTiempo))
+                ).recover(Exception.class,-1.0);
 
         assertFalse(resultado.isFailure());
         assertEquals(resultado.getOrElse(-100.0),-1.0,1.0);
