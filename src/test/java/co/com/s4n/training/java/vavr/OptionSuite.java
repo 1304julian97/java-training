@@ -1,5 +1,6 @@
 package co.com.s4n.training.java.vavr;
 
+import co.com.s4n.training.java.FisicaMUA;
 import org.junit.Test;
 
 
@@ -17,6 +18,8 @@ import static io.vavr.Patterns.$Some;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import static io.vavr.API.Some;
 import static org.junit.Assert.assertEquals;
@@ -223,4 +226,36 @@ public class OptionSuite {
                                    For(esPar(4), c -> Option(d+c))).toOption();
         assertEquals(integers,Some(6));
     }
+
+    @Test
+    public void testVelocidadFinalMUA()
+    {
+        Double velocidadInicial = new Double(10.0);
+        Double aceleracion = new Double(20.0);
+        Double distancia = new Double(100);
+        //Option<Double> optionVelocidadInicialAlCuadrado = FisicaMUA.calcularVelocidadInicialAlCuadrado(velocidadInicial);
+        //Option<Double> option2VecesAceleracionXDistancia = FisicaMUA.calcular2VecesAceleracionXDistancia(aceleracion,distancia);
+        Option<Double> resultado = FisicaMUA.calcularVelocidadInicialAlCuadrado(velocidadInicial).
+                        flatMap(velocidadAlCuadrado -> FisicaMUA.calcularRaizCuadradaDeLaSumaDeDosNumeros(velocidadAlCuadrado,
+                                FisicaMUA.calcular2VecesAceleracionXDistancia(aceleracion,distancia).getOrElse(new Double(-100))));
+
+        assertEquals(resultado.getOrElse(-100.0),64.0,1.0);
+    }
+
+    @Test
+    public void testVelocidadFinalMUAFor(){
+        Double velocidadInicial = new Double(10.0);
+        Double aceleracion = new Double(20.0);
+        Double distancia = new Double(100);
+        //Option<Double> optionVelocidadInicialAlCuadrado = FisicaMUA.calcularVelocidadInicialAlCuadrado(velocidadInicial);
+        //Option<Double> option2VecesAceleracionXDistancia = FisicaMUA.calcular2VecesAceleracionXDistancia(aceleracion,distancia);
+        Option<Double> resultado =
+                For(FisicaMUA.calcular2VecesAceleracionXDistancia(aceleracion,distancia),x->
+                    FisicaMUA.calcularRaizCuadradaDeLaSumaDeDosNumeros
+                            (x,FisicaMUA.calcularVelocidadInicialAlCuadrado(velocidadInicial).getOrElse(new Double(-100.0)))
+                ).toOption();
+        assertEquals(resultado.getOrElse(-100.0),64.0,1.0);
+    }
+
+
 }
