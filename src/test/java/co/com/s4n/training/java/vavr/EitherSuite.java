@@ -30,9 +30,13 @@ public class EitherSuite {
         Either<Integer,String> myEitherR = Either.right("String");
         Either<Integer,String> myEitherL = Either.left(14);
         assertTrue("Valide swap before in Either Right", myEitherR.isRight());
+        assertFalse(myEitherR.isLeft());
         assertTrue("Valide swap after in Either Right", myEitherR.swap().isLeft());
+        assertFalse(myEitherR.swap().isRight());
         assertTrue("Valide swap before in Either Left", myEitherL.isLeft());
+        assertFalse(myEitherL.isRight());
         assertTrue("Valide swap after in Either Right", myEitherL.swap().isRight());
+        assertFalse(myEitherL.swap().isLeft());
     }
 
     /**
@@ -53,6 +57,11 @@ public class EitherSuite {
         assertEquals("Failure - Left Projection", Left(10), e2.mapLeft(it -> it + 5));
     }
 
+    @Test
+    public void mapParaValorIzquierda(){
+        Either<Integer,Integer> e1 = Either.right(10);
+        assertNotEquals(Right(11),e1.mapLeft(it->it+1));
+    }
     /**
      * El map por defecto operara el lado derecho, si el either tiene su informacion en el lado izquierdo
      * este no se modificara
@@ -94,16 +103,46 @@ public class EitherSuite {
 
     }
 
+    public Either<String,Integer> suma(Integer i1, Integer i2){
+        return Right(i1+i2);
+    }
+
+    public Either<String, Integer> resta(Integer i1, Integer i2){
+        return i2>i1 ? Left("Resultado Negativo"):Right(i1-i2);
+    }
+
+    @Test
+    public void pruebaSumaRestaEitherLeft(){
+        Either<String, Integer> resultado = suma(1, 2).flatMap(x -> resta(x, 1).flatMap(y -> resta(y, 10)));
+        assertEquals(Left("Resultado Negativo"),resultado.mapLeft(x->x));
+    }
+
+    @Test
+    public void pruebaSumaRestaEitherRight(){
+        Either<String, Integer> resultado = suma(10, 20).flatMap(x -> resta(x, 1).flatMap(y -> resta(y, 10)));
+        assertEquals(Right(19),resultado.map(x->x));
+    }
+
     /**
      * Un Either puede ser filtrado, y en el predicado se pone la condicion
      */
     @Test
-    public void testEitherFilter() {
+    public void testEitherFilterNone() {
 
         Either<String,Integer> value = Either.right(7);
 
         assertEquals("value is even",
                 None(),
+                value.filter(it -> it % 2 == 0));
+    }
+
+    @Test
+    public void testEitherFilterSome() {
+
+        Either<String,Integer> value = Either.right(8);
+
+        assertEquals("value is even",
+                Some(Right(8)),
                 value.filter(it -> it % 2 == 0));
     }
 
@@ -182,6 +221,50 @@ public class EitherSuite {
 
         myEitherL.peekLeft(myConsumer);
         assertEquals("Validete Either with peek","foo", valor[0]);
+    }
+
+    public Either<String, String> biPeek(Consumer<String> consumerDerecha,Consumer<String> consumerIzquierda,Either<String,String> eitherEntrada){
+        if(eitherEntrada.isRight()){
+            return eitherEntrada.peek(consumerDerecha);
+        }
+        if(eitherEntrada.isLeft()){
+            return eitherEntrada.peekLeft(consumerIzquierda);
+        }
+        return eitherEntrada;
+
+    }
+
+    @Test
+    public void verificarBiPeek(){
+        final String[] valor = {"default"};
+        Either<String,String> myEitherR = Either.right("1234567");
+        Either<String,String> myEitherR2 = Either.right("123456");
+        Either<String,String> myEitherL = Either.left("1234567");
+
+        Consumer<String> myConsumerLeft = element -> {
+            if(element.length()>6){
+                valor[0] = "Es por Izquierda";
+            }
+        };
+
+
+        Consumer<String> myConsumerRight = element -> {
+            if(element.length()>6){
+                valor[0] = "Es por Derecha";
+            }
+        };
+
+
+        Either<String,String> respuestaNoValidada = biPeek(myConsumerRight,myConsumerLeft,myEitherR2);
+        assertEquals("default", valor[0]);
+
+        Either<String,String> respuestaDerecha= biPeek(myConsumerRight,myConsumerRight,myEitherR);
+        assertEquals("Es por Derecha", valor[0]);
+
+        Either<String,String> respuestaIzquierda = biPeek(myConsumerRight,myConsumerLeft,myEitherL);
+        assertEquals("Es por Izquierda", valor[0]);
+
+
     }
 
     /**

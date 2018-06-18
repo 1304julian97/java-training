@@ -1,6 +1,7 @@
 package co.com.s4n.training.java.vavr;
 
 import io.vavr.Function1;
+import io.vavr.Lazy;
 import io.vavr.collection.List;
 import io.vavr.collection.Seq;
 import io.vavr.collection.Stream;
@@ -19,6 +20,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import static io.vavr.Predicates.instanceOf;
 import static io.vavr.Patterns.*;
+import static java.lang.Thread.sleep;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -44,7 +46,7 @@ public class FutureSuite {
             if (++count > WAIT_COUNT) {
                 fail("Condition not met.");
             } else {
-                Try.run(() -> Thread.sleep(WAIT_MILLIS));
+                Try.run(() -> sleep(WAIT_MILLIS));
             }
         }
     }
@@ -310,7 +312,7 @@ public class FutureSuite {
 
         Future<String> future2 = Future.ofSupplier(service, () -> {
             try {
-                Thread.sleep(1000);
+                sleep(1000);
 
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -486,7 +488,7 @@ public class FutureSuite {
         ExecutorService executorService = Executors.newFixedThreadPool(1);
         Future<Integer> aFuture = Future.of(executorService,
                 () -> {
-                    Thread.sleep(1000);
+                    sleep(1000);
                     thread1[0] = Thread.currentThread().getName().toString();
                     return 2/0;
                 }
@@ -511,7 +513,7 @@ public class FutureSuite {
         ExecutorService executorService = Executors.newFixedThreadPool(1);
         Future<Integer> aFuture = Future.of(executorService,
                 () -> {
-                    Thread.sleep(1000);
+                    sleep(1000);
                     thread1[0] = Thread.currentThread().getName().toString();
                     return 2/0;
                 }
@@ -565,6 +567,37 @@ public class FutureSuite {
                 Case($Future($()), "Success!"),
                 Case($(), "Double failure"));
         assertEquals("Failure - The future should be a success", "Success!", result);
+    }
+
+    @Test
+    public void testLenguajeEstricto(){
+        float testInicio = System.nanoTime();
+
+        Future<Integer> f1 = Future.of(()->{
+            sleep(500);
+            return 1;
+        });
+        Future<Integer> f2 = Future.of(()->{
+            sleep(800);
+            return 1;
+        });Future<Integer> f3 = Future.of(()->{
+            sleep(300);
+            return 1;
+        });
+
+        /*Future<Integer> integers = f1.flatMap(x -> Future.of(() -> x + 1).
+                flatMap(y -> f2.
+                        flatMap(z -> Future.of(() ->
+                                f3.getOrElse(5)))));*/
+        Future<Integer> integers = f1.flatMap(x -> f2.flatMap(y -> Future.of(() -> f3.get())));
+        integers.await().getOrElse(3);
+        float testFinal = System.nanoTime();
+
+
+        float tiempoDeDuracion = testFinal-testInicio;
+
+        assertEquals(800,(double)tiempoDeDuracion*(Math.pow(10,-6)),10);
+
     }
 
     /**
@@ -656,7 +689,7 @@ public class FutureSuite {
         Future<Object> myFuture = Future.of(()-> {
             mypromise.success(15);
             try {
-                Thread.sleep(10000);
+                sleep(10000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
@@ -667,4 +700,6 @@ public class FutureSuite {
         assertEquals("Failure - Validate Future with Promise",new Integer(15),myFutureOne.get());
         assertFalse("Failure - Validate myFuture is not complete",myFuture.isCompleted());
     }
+
+
 }
