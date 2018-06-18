@@ -1,12 +1,27 @@
 package co.com.s4n.training.java.vavr.EjercicioExtra;
 
+import lombok.AccessLevel;
+import lombok.Getter;
+
 public class Persona {
 
-    private int edad;
+
+    @Getter
+    public int edad;
+
+    @Getter
     private String nombre;
+
+    @Getter
     private String identificacion;
+
+    @Getter
     private TiposEstadoCivil estadoCivil;
+
+    @Getter
     private int patrimonio;
+
+    @Getter
     private Sexo sexo;
 
 
@@ -20,28 +35,5 @@ public class Persona {
     }
 
 
-    public Sexo sexo(){
-        return this.sexo;
-    }
-
-    public int edad(){
-        return this.edad;
-    }
-
-    public String nombre(){
-        return this.nombre;
-    }
-
-    public String identificacion(){
-        return this.identificacion;
-    }
-
-    public TiposEstadoCivil estadoCivil(){
-        return this.estadoCivil;
-    }
-
-    public int patrimonio(){
-        return this.patrimonio;
-    }
 
 }

@@ -20,7 +20,6 @@ public class TestServicioPersona {
     public void testAdoptarNiniosParejaHetero(){
         Option<Persona> resultado = adoptarNinios(MUJER,HOMBRE);
         Persona ninio = new Persona(0,"Miguel","399393",TiposEstadoCivil.Soltero,0,Sexo.MASCULINO);
-        boolean validar = resultado.get().equals(ninio);
         assertEquals(resultado.getOrElse(()->null),ninio);
     }
 
