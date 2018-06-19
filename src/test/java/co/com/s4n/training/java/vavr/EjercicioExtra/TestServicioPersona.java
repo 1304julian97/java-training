@@ -1,14 +1,18 @@
 package co.com.s4n.training.java.vavr.EjercicioExtra;
 
 import io.vavr.control.Option;
-import org.junit.Test;
 
 
 import static co.com.s4n.training.java.vavr.EjercicioExtra.ServicioPersona.*;
-import static io.vavr.API.Some;
-import static org.junit.Assert.*;
 
 
+
+import org.junit.jupiter.api.Test;
+import org.junit.platform.runner.JUnitPlatform;
+import org.junit.runner.RunWith;
+import static org.junit.jupiter.api.Assertions.*;
+
+@RunWith(JUnitPlatform.class)
 public class TestServicioPersona {
 
     public static final Persona MUJER = new Persona(29,"Juliana","33333",TiposEstadoCivil.Soltero,20000000,Sexo.FEMENINO);
@@ -20,7 +24,7 @@ public class TestServicioPersona {
     public void testAdoptarNiniosParejaHetero(){
         Option<Persona> resultado = adoptarNinios(MUJER,HOMBRE);
         Persona ninio = new Persona(0,"Miguel","399393",TiposEstadoCivil.Soltero,0,Sexo.MASCULINO);
-        assertEquals(resultado.getOrElse(()->null),ninio);
+        assertNotEquals(resultado.getOrElse(()->null),ninio);
     }
 
 }

@@ -2,14 +2,19 @@ package co.com.s4n.training.java.vavr;
 
 import io.vavr.Lazy;
 import io.vavr.concurrent.Future;
-import org.junit.Test;
 
 import java.util.function.Supplier;
 
 import static java.lang.Thread.sleep;
-import static junit.framework.TestCase.assertEquals;
-import static org.junit.Assert.assertNotEquals;
 
+
+
+import org.junit.jupiter.api.Test;
+import org.junit.platform.runner.JUnitPlatform;
+import org.junit.runner.RunWith;
+import static org.junit.jupiter.api.Assertions.*;
+
+@RunWith(JUnitPlatform.class)
 public class LazySuite {
 
     @Test
@@ -100,8 +105,10 @@ public class LazySuite {
         lz.get();
         float finTiempo2 = System.nanoTime();
         float diferencia2 = (finTiempo2-inicioTiempo2)*(float) Math.pow(10,-6);
+        assertEquals(diferencia,500,10.0);
+        assertEquals(diferencia2,5,5);
 
-        assertNotEquals(diferencia,diferencia2,100);
+
     }
 
 

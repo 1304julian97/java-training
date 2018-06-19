@@ -5,18 +5,36 @@ import io.vavr.collection.List;
 import io.vavr.collection.Seq;
 import io.vavr.control.Either;
 import io.vavr.control.Validation;
-import org.junit.Test;
+//import org.junit.Test;
 import io.vavr.Function1;
 import io.vavr.control.Option;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.function.Consumer;
 
+//import static org.junit.Assert.assertEquals;
+
+//import static org.junit.Assert.assertFalse;
+//import static org.junit.Assert.assertTrue;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestFactory;
+import org.junit.platform.runner.JUnitPlatform;
+import org.junit.runner.RunWith;
+
+import java.util.Arrays;
+import java.util.Collection;
+
 import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
+@RunWith(JUnitPlatform.class)
 public class ValidationSuite
 {
     class TestValidation {
@@ -82,7 +100,7 @@ public class ValidationSuite
 
         MyClass myClass = res.get();
 
-        assertTrue("ap should be valid",res.isValid());
+        assertTrue(res.isValid());
         assertEquals("La edad debe ser 15 en la clase instanciada ", myClass.age, "15");
 
     }
@@ -107,7 +125,7 @@ public class ValidationSuite
         assertTrue("ap should be invalid",res.isValid());
     }
 */
-    @Test(expected = java.util.NoSuchElementException.class)
+    @Test
     public void testValidation5() {
 
         Validation<Seq<String>, MyClass> res=  Validation
@@ -117,9 +135,8 @@ public class ValidationSuite
 
         // Este acceso es inseguro porque no se sabe si fue valid o invalid.
         // en este caso esto lanza una excepción. Esto significa que el accesor get sobre un Validation es INSEGURO!
-        MyClass myClass = res.get();
 
-        assertTrue("ap should be invalid",res.isValid());
+        assertThrows(java.util.NoSuchElementException.class,()->res.get());
     }
 
     public void testValidation3() {
@@ -131,7 +148,7 @@ public class ValidationSuite
 
         Integer fold = res.fold(s -> 1, c -> 2);
 
-        assertTrue("ap should be invalid",res.isInvalid());
+        assertTrue(res.isInvalid());
         assertEquals(fold.intValue(), 1);
     }
 
@@ -235,7 +252,7 @@ public class ValidationSuite
                 .matches(EMAIL_REGEX)
                 ? Validation.valid(email)
                 : Validation.invalid("Email contains invalid characters");
-        assertTrue("The validator failed", validateEmail.isValid());
+        assertTrue(validateEmail.isValid());
     }
 
     /**
@@ -254,7 +271,7 @@ public class ValidationSuite
                 ? Validation.valid(value)
                 : Validation.invalid("The value is out of the defined bounds");
 
-        assertTrue("The validator was successful", validateBound.isInvalid());
+        assertTrue(validateBound.isInvalid());
     }
 
     /**

@@ -1,10 +1,8 @@
 package co.com.s4n.training.java.jdk;
 
-import static org.junit.Assert.*;
 
 import co.com.s4n.training.java.CollectablePerson;
-import org.junit.Ignore;
-import org.junit.Test;
+
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -12,6 +10,13 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.*;
 
+
+import org.junit.jupiter.api.Test;
+import org.junit.platform.runner.JUnitPlatform;
+import org.junit.runner.RunWith;
+import static org.junit.jupiter.api.Assertions.*;
+
+@RunWith(JUnitPlatform.class)
 public class CompletableFutureSuite {
 
     private void sleep(int milliseconds){
@@ -332,7 +337,7 @@ public class CompletableFutureSuite {
         try {
             assertEquals(f2.get(),"b");
         }catch (Exception e){
-            fail();
+            assertTrue(false);
         }
     }
 
@@ -354,7 +359,7 @@ public class CompletableFutureSuite {
         try {
             assertEquals(f2.get(),"b");
         }catch (Exception e){
-            fail();
+            assertTrue(false);
         }
     }
 
@@ -386,7 +391,7 @@ public class CompletableFutureSuite {
             sleep(1000);
             imprimirMensajeConFechaActual(pruebaNombre+" MiNombre es:  "+(String)completableFuture2.get());
         }catch (Exception e) {
-            fail();
+            assertTrue(false);
         }
     }
 

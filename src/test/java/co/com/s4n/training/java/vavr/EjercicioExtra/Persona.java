@@ -6,22 +6,69 @@ import lombok.Getter;
 public class Persona {
 
 
-    @Getter
+
     public int edad;
 
-    @Getter
+
     private String nombre;
 
-    @Getter
+
     private String identificacion;
 
-    @Getter
+
     private TiposEstadoCivil estadoCivil;
 
-    @Getter
+
     private int patrimonio;
 
-    @Getter
+    public int getEdad() {
+        return edad;
+    }
+
+    public void setEdad(int edad) {
+        this.edad = edad;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public String getIdentificacion() {
+        return identificacion;
+    }
+
+    public void setIdentificacion(String identificacion) {
+        this.identificacion = identificacion;
+    }
+
+    public TiposEstadoCivil getEstadoCivil() {
+        return estadoCivil;
+    }
+
+    public void setEstadoCivil(TiposEstadoCivil estadoCivil) {
+        this.estadoCivil = estadoCivil;
+    }
+
+    public int getPatrimonio() {
+        return patrimonio;
+    }
+
+    public void setPatrimonio(int patrimonio) {
+        this.patrimonio = patrimonio;
+    }
+
+    public Sexo getSexo() {
+        return sexo;
+    }
+
+    public void setSexo(Sexo sexo) {
+        this.sexo = sexo;
+    }
+
     private Sexo sexo;
 
 
