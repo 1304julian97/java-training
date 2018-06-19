@@ -2,9 +2,14 @@ package co.com.s4n.training.java.jdk;
 
 import static org.junit.Assert.*;
 
+import co.com.s4n.training.java.CollectablePerson;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.concurrent.*;
 
 public class CompletableFutureSuite {
@@ -15,6 +20,18 @@ public class CompletableFutureSuite {
         }catch(Exception e){
             System.out.println("Problemas durmiendo hilo");
         }
+    }
+
+
+    public void imprimirMensajeConFechaActual(String mensaje){
+        CompletableFuture<String> completableFuture = new CompletableFuture<>();
+
+        String pattern = "HH:mm:ss:SSS";
+        SimpleDateFormat formato = new SimpleDateFormat(pattern);
+        Date fecha = new Date();
+        String fechaString = formato.format(fecha);
+        String retorno = fechaString+" "+mensaje;
+        System.out.println(retorno);
     }
 
     @Test
@@ -126,12 +143,12 @@ public class CompletableFutureSuite {
         //thenApply acepta lambdas de aridad 1 con retorno
         CompletableFuture<String> future = completableFuture
                 .thenApply(s -> {
-                    System.out.println(testName + " - future corriendo en el thread: "+Thread.currentThread().getName());
-
+                    imprimirMensajeConFechaActual("Este es el hilo de apply: Hola soy un mensaje 2 compose corriendo en el thread: " + Thread.currentThread().getName());
+                    sleep(500);
                     return s + " World";
                 })
                 .thenApply(s -> {
-                    System.out.println(testName + " - future corriendo en el thread: "+Thread.currentThread().getName());
+                    imprimirMensajeConFechaActual("Este es el hilo de apply: Hola soy un mensaje 2 compose corriendo en el thread: " + Thread.currentThread().getName());
 
                     return s + "!";
                 });
@@ -159,10 +176,10 @@ public class CompletableFutureSuite {
         // analice el segundo thenAccept ¿Tiene sentido?
         CompletableFuture<Void> future = completableFuture
                 .thenAccept(s -> {
-                    System.out.println(testName + " - future corriendo en el thread: " + Thread.currentThread().getName() + " lo que viene del futuro es: "+s);
-                })
+                    imprimirMensajeConFechaActual("Este es el hilo de accept: Hola soy un mensaje 2 compose corriendo en el thread: " + Thread.currentThread().getName());
+                    sleep(500);                })
                 .thenAccept(s -> {
-                    System.out.println(testName + " - future corriendo en el thread: " + Thread.currentThread().getName() + " lo que viene del futuro es: "+s);
+                    imprimirMensajeConFechaActual("Este es el hilo de accept: Hola soy un mensaje 3 compose corriendo en el thread: " + Thread.currentThread().getName());
                 });
 
     }
@@ -173,17 +190,20 @@ public class CompletableFutureSuite {
         String testName = "t7";
 
         CompletableFuture<String> completableFuture = CompletableFuture.supplyAsync(() -> {
-            System.out.println(testName + " - completbleFuture corriendo en el thread: "+Thread.currentThread().getName());
+            imprimirMensajeConFechaActual("Hola soy un mensaje 1");
+
             return "Hello";
         });
 
         //thenAccept solo acepta Consumer (lambdas de aridad 1 que no tienen retorno)
         CompletableFuture<Void> future = completableFuture
                 .thenRun(() -> {
-                    System.out.println(testName + " - future corriendo en el thread: " + Thread.currentThread().getName());
+                    imprimirMensajeConFechaActual("Este es el hilo de run: Hola soy un mensaje 2 compose corriendo en el thread: " + Thread.currentThread().getName());
+                    sleep(500);
+
                 })
                 .thenRun(() -> {
-                    System.out.println(testName + " - future corriendo en el thread: " + Thread.currentThread().getName());
+                    imprimirMensajeConFechaActual("Este es el hilo de run: Hola soy un mensaje 2 compose corriendo en el thread: " + Thread.currentThread().getName());
                 });
 
     }
@@ -195,7 +215,7 @@ public class CompletableFutureSuite {
 
         CompletableFuture<String> completableFuture = CompletableFuture
                 .supplyAsync(() -> {
-                    System.out.println(testName + " - future corriendo en el thread: " + Thread.currentThread().getName());
+                    System.out.println(testName + " - completableFuture corriendo en el thread: " + Thread.currentThread().getName());
                     return "Hello";
                 })
                 .thenCompose(s -> {
@@ -214,6 +234,41 @@ public class CompletableFutureSuite {
     }
 
     @Test
+    public void t12(){
+
+        String testName = "t12";
+
+        CompletableFuture<CollectablePerson> completableFuture = CompletableFuture
+                .supplyAsync(() -> {
+                    System.out.println(testName + " - completableFuture corriendo en el thread: " + Thread.currentThread().getName());
+                    return "Julian.21";
+                })
+                .thenCompose(s -> {
+                    System.out.println(testName + " - compose corriendo en el thread: " + Thread.currentThread().getName());
+                    String string = s;
+                    String[] parts = string.split("\\.");
+                    String nombre = parts[0];
+                    int edad = Integer.parseInt(parts[1]);
+
+                    return CompletableFuture.supplyAsync(() ->{
+                        System.out.println(testName + " - CompletableFuture interno corriendo en el thread: " + Thread.currentThread().getName());
+
+                        return new CollectablePerson(nombre,edad)  ;
+                    } );
+                });
+
+        try {
+            CollectablePerson collectablePerson = completableFuture.get();
+            CollectablePerson collectablePersonAnswer = new CollectablePerson("Julian",21);
+            assertEquals(collectablePersonAnswer.age,collectablePerson.age);
+            assertEquals(collectablePersonAnswer.name,collectablePerson.name);
+        }catch(Exception e){
+            assertTrue(false);
+        }
+    }
+
+
+    @Test
     public void t9(){
 
         String testName = "t9";
@@ -221,10 +276,17 @@ public class CompletableFutureSuite {
 
         // El segundo parametro de thenCombina es un BiFunction la cual sí tiene que tener retorno.
         CompletableFuture<String> completableFuture = CompletableFuture
-                .supplyAsync(() -> "Hello")
+                .supplyAsync(() ->{
+                    System.out.println(testName+" "+Thread.currentThread().getName());
+                    return "Hello";})
                 .thenCombine(
-                        CompletableFuture.supplyAsync(() -> " World"),
-                        (s1, s2) -> s1 + s2
+                        CompletableFuture.supplyAsync(() -> {
+                            System.out.println(testName+" "+Thread.currentThread().getName());
+                            return " World";}),
+                        (s1, s2) ->  {
+                            System.out.println(testName+" "+Thread.currentThread().getName());
+                            return s1+s2;
+                        }
                 );
 
         try {
@@ -249,7 +311,82 @@ public class CompletableFutureSuite {
             Object o = future.get();
         }catch(Exception e){
             assertTrue(false);
+        }
+    }
 
+    @Test
+    public void testEnlaceConSupplyAsync(){
+        ExecutorService es  = Executors.newFixedThreadPool(1);
+        CompletableFuture f = CompletableFuture.supplyAsync(()->"Hello",es);
+
+        CompletableFuture<String> f2 = f.supplyAsync(() -> {
+            System.out.println("Test Extra:  Ejecutando a: ");
+            sleep(500);
+            System.out.println("Test Extra:  Ejecutando a2: ");
+            return "a";
+        }).supplyAsync(()-> {
+            System.out.println("Test Extra: Ejecutando b: ");
+            return "b";
+        });
+
+        try {
+            assertEquals(f2.get(),"b");
+        }catch (Exception e){
+            fail();
+        }
+    }
+
+    @Test
+    public void testEnlaceConSupplyAsync2(){
+        ExecutorService es  = Executors.newFixedThreadPool(1);
+        CompletableFuture f = CompletableFuture.supplyAsync(()->"Hello",es);
+
+        CompletableFuture<String> f2 = f.supplyAsync(() -> {
+            imprimirMensajeConFechaActual("Test Extra2:  Ejecutando a: ");
+            sleep(500);
+            imprimirMensajeConFechaActual("Test Extra2:  Ejecutando a2: ");
+            return "a";
+        },es).supplyAsync(()-> {
+            imprimirMensajeConFechaActual("Test Extra2: Ejecutando b: ");
+            return "b";
+        },es);
+
+        try {
+            assertEquals(f2.get(),"b");
+        }catch (Exception e){
+            fail();
+        }
+    }
+
+    @Test
+    public void testEnlaceConThenApplyAsync() {
+        String pruebaNombre = "*******Enlace Con thenApplyAsync********";
+        ExecutorService executorService = Executors.newFixedThreadPool(5);
+        CompletableFuture f = CompletableFuture.supplyAsync(()->{
+            imprimirMensajeConFechaActual(pruebaNombre+" futuro "+Thread.currentThread().getName());
+            return "Julian";
+            },executorService);
+
+        CompletableFuture <String> completableFuture2 = f.thenApplyAsync(x->{
+            sleep(1000);
+            imprimirMensajeConFechaActual(pruebaNombre+" primer thenApply "+Thread.currentThread().getName()+" "+x);
+            sleep(1000);
+            imprimirMensajeConFechaActual(pruebaNombre+" primer thenApply segunda prueba "+Thread.currentThread().getName()+" "+x);
+            return x + " Carvajal";
+
+        } ).
+            thenApplyAsync(y->{
+                imprimirMensajeConFechaActual(pruebaNombre+" Segundo ThenApply "+Thread.currentThread().getName()+ " "+y);
+                return y + " Montoya";
+            },executorService);
+
+
+
+        try {
+            sleep(1000);
+            imprimirMensajeConFechaActual(pruebaNombre+" MiNombre es:  "+(String)completableFuture2.get());
+        }catch (Exception e) {
+            fail();
         }
     }
 
