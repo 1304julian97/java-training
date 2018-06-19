@@ -1,5 +1,6 @@
 package co.com.s4n.training.java.vavr;
 
+import co.com.s4n.training.java.FisicaMUATry;
 import io.vavr.CheckedFunction1;
 import io.vavr.CheckedFunction2;
 import io.vavr.Function1;
@@ -8,6 +9,8 @@ import org.junit.Test;
 import static io.vavr.API.*;
 import static io.vavr.Predicates.*;
 import static io.vavr.Patterns.*;
+import static io.vavr.control.Try.success;
+import static java.lang.Float.NaN;
 import static junit.framework.TestCase.assertEquals;
 import io.vavr.PartialFunction;
 import java.util.ArrayList;
@@ -16,6 +19,8 @@ import java.util.stream.Stream;
 import java.util.List;
 import java.util.function.Consumer;
 import static io.vavr.control.Try.failure;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 
 public class TrySuite {
@@ -33,8 +38,11 @@ public class TrySuite {
                 Success(3),
                 myTrySuccess);
 
+        assertNotEquals(3,myTrySuccess);
         assertTrue("failed - the values is a Failure",
                 myTryFailure.isFailure());
+
+
     }
 
     private String patternMyTry(Try<Integer> myTry) {
@@ -118,6 +126,13 @@ public class TrySuite {
                 transform);
     }
 
+    @Test
+    public void mapSucces(){
+        Try<Integer> numero = Try.of(()->"Julian").
+                map(x->x.length());
+
+        assertEquals(numero,Success(6));
+    }
     /**
      * La funcionalidad transform va a generar error sobre un try con error.
      */
@@ -330,6 +345,16 @@ public class TrySuite {
                 Try.failure(new ArithmeticException("/ by zero")).toString() ,
                 aTry2.toString());
     }
+
+    @Test
+    public void testTryWithRecoverAndRecoverWith(){
+        Try<Integer> aTry = Try.of(() -> 2/0).recover(ArithmeticException.class,2);
+        Try<Integer> aTry2 = Try.of(() -> 2/0).recoverWith(ArithmeticException.class,Try.of(() ->  2/0));
+        assertEquals("Does not recover of 2/0", Try.of(() -> 2), aTry);
+        assertEquals("RecoverWith does not work",
+                Try.failure(new ArithmeticException("/ by zero")).toString() ,
+                aTry2.toString());
+    }
     /**
      *  El Recover retorna el valor a recuperar, pero sin Try, permitiendo que lance un Exception
      *  si, falla
@@ -355,6 +380,111 @@ public class TrySuite {
         };
         Try<Integer> aTry = Try.of(() -> 2).mapTry(checkedFunction1);
         assertEquals("Failed the checkedFuntion", Success(1),aTry);
+    }
+
+    private Try<Integer> suma(Integer a,Integer b){
+        return Try.of(()->a+b);
+    }
+
+    private Try<Integer> division(Integer a, Integer b){
+        return Try.of(()->a/b);
+    }
+
+    @Test
+    public void testMonadicoComposicionConFlatMapAnidado(){
+        Try<Integer> integers = suma(1, 2).
+                flatMap(r -> suma(r, r).
+                        flatMap(r2 -> suma(r2, r2).
+                                flatMap(r3 -> suma(r3, -12).
+                                        flatMap(x -> division(x, x)))));
+
+        assertTrue(integers.isFailure());
+    }
+
+
+    @Test
+    public void testMonadicoComposicionConFlatMapSinAnidar(){
+        Try<Integer> integers = suma(1, 2).
+                flatMap(r -> suma(r, r)).
+                        flatMap(r2 -> suma(r2, r2)).
+                                flatMap(r3 -> suma(r3, -12)).
+                                        flatMap(x -> division(x, x));
+
+        assertTrue(integers.isFailure());
+    }
+
+    @Test
+    public void testMonadicoComposicionConFor(){
+        Try<Integer> integers = For(suma(1,1),x->
+                For(suma(x,x),y->For(suma(y,-4),z->division(z,z)))).toTry();
+        assertTrue(integers.isFailure());
+    }
+
+    @Test
+    public void testMonadicoComposicionConForConRicover(){
+        Try<Integer> integers = For(suma(1,1),x->
+                For(suma(x,x),y->For(suma(y,-4),z->division(z,z)))).toTry();
+        Try<Integer> recover = integers.recover(Exception.class,-2);
+        Try<Integer> recoverWith = integers.recoverWith(Exception.class,Try.of(() -> -2));
+
+        assertTrue(integers.isFailure());
+        assertFalse(recover.isFailure());
+        assertFalse(recoverWith.isFailure());
+
+    }
+
+    private Try<Integer> divisionConRecuperacion(Integer i,Integer j)
+    {
+        return Try.of(()->i/j).recoverWith(Exception.class,Try.of(()->-1));
+    }
+
+    @Test
+    public void tesDivisionConRecuperacion(){
+
+        assertFalse(divisionConRecuperacion(0,0).isFailure());
+    }
+
+    @Test
+    public void TestFisicaMUASucces(){
+        Double velocidadInicial = new Double(10.0);
+        Double aceleracion = new Double(20.0);
+        Double distancia = new Double(100);
+        Try<Double> resultado = FisicaMUATry.calcularVelocidadInicialAlCuadrado(velocidadInicial).
+                flatMap(velocidadAlCuadrado -> FisicaMUATry.calcular2VecesAceleracionXDistancia(aceleracion,distancia).
+                        flatMap(_2VecesAcelaracionXTiempo -> FisicaMUATry.calcularRaizCuadradaDeLaSumaDeDosNumeros(velocidadAlCuadrado,_2VecesAcelaracionXTiempo))
+                ).recoverWith(Exception.class,Try.of(()->-1.0));
+
+        assertTrue(resultado.isSuccess());
+        assertEquals(resultado.getOrElse(-100.0),64.0,1.0);
+    }
+
+
+    @Test
+    public void TestFisicaMUAFailureRecoverWith(){
+        Double velocidadInicial = new Double(5.0);
+        Double aceleracion = new Double(-2.0);
+        Double distancia = new Double(100);
+        Try<Double> resultado = FisicaMUATry.calcularVelocidadInicialAlCuadrado(velocidadInicial).
+                flatMap(velocidadAlCuadrado -> FisicaMUATry.calcular2VecesAceleracionXDistancia(aceleracion,distancia).
+                        flatMap(_2VecesAcelaracionXTiempo -> FisicaMUATry.calcularRaizCuadradaDeLaSumaDeDosNumeros(velocidadAlCuadrado,_2VecesAcelaracionXTiempo))
+                ).recoverWith(Exception.class,Try.of(()->-1.0));
+
+        assertFalse(resultado.isFailure());
+        assertEquals(resultado.getOrElse(-100.0),-1.0,1.0);
+    }
+
+    @Test
+    public void TestFisicaMUAFailureRecover(){
+        Double velocidadInicial = new Double(5.0);
+        Double aceleracion = new Double(-2.0);
+        Double distancia = new Double(100);
+        Try<Double> resultado = FisicaMUATry.calcularVelocidadInicialAlCuadrado(velocidadInicial).
+                flatMap(velocidadAlCuadrado -> FisicaMUATry.calcular2VecesAceleracionXDistancia(aceleracion,distancia).
+                        flatMap(_2VecesAcelaracionXTiempo -> FisicaMUATry.calcularRaizCuadradaDeLaSumaDeDosNumeros(velocidadAlCuadrado,_2VecesAcelaracionXTiempo))
+                ).recover(Exception.class,-1.0);
+
+        assertFalse(resultado.isFailure());
+        assertEquals(resultado.getOrElse(-100.0),-1.0,1.0);
     }
 
 }
