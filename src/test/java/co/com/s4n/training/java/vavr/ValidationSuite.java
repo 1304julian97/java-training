@@ -3,6 +3,7 @@ package co.com.s4n.training.java.vavr;
 import io.vavr.collection.CharSeq;
 import io.vavr.collection.List;
 import io.vavr.collection.Seq;
+import io.vavr.control.Either;
 import io.vavr.control.Validation;
 import org.junit.Test;
 import io.vavr.Function1;
@@ -13,6 +14,7 @@ import java.util.function.Consumer;
 
 import static org.junit.Assert.assertEquals;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class ValidationSuite
@@ -90,8 +92,23 @@ public class ValidationSuite
      * y sin embargo todas las funciones se deben ejecutar.
      */
 
-    @Test(expected = java.util.NoSuchElementException.class)
+/*    @Test
     public void testValidation2() {
+
+        Validation<Seq<String>, MyClass> res=  Validation
+                .combine(validateAge(13),
+                        validateAmount(15000))
+                .ap(MyClass::new);
+
+        // Este acceso es inseguro porque no se sabe si fue valid o invalid.
+        // en este caso esto lanza una excepción. Esto significa que el accesor get sobre un Validation es INSEGURO!
+        MyClass myClass = res.getOrElseGet((x)->new MyClass("",""));
+
+        assertTrue("ap should be invalid",res.isValid());
+    }
+*/
+    @Test(expected = java.util.NoSuchElementException.class)
+    public void testValidation5() {
 
         Validation<Seq<String>, MyClass> res=  Validation
                 .combine(validateAge(13),
@@ -102,7 +119,7 @@ public class ValidationSuite
         // en este caso esto lanza una excepción. Esto significa que el accesor get sobre un Validation es INSEGURO!
         MyClass myClass = res.get();
 
-        assertTrue("ap should be invalid",res.isInvalid());
+        assertTrue("ap should be invalid",res.isValid());
     }
 
     public void testValidation3() {
@@ -149,7 +166,36 @@ public class ValidationSuite
         Validation<Error,String> valid2 = Validation.valid("Go!");
         Validation<Error, String> invalid = Validation.invalid(new Error("Stop!"));
 
-        Validation<Seq<Error>, String> finalValidation = Validation.combine(valid, invalid , valid2).ap((v1,v2,v3) -> v1 + v2 + v3);
+        Validation<Seq<Error>, String> finalValidation = Validation.
+                combine(valid, invalid , valid2).ap((v1,v2,v3) -> v1 + v2 + v3);
+
+        assertEquals("Failure - Combine with an invalid Validation didn't return the error",
+                "Stop!",
+                finalValidation.getError().get(0).getMessage());
+
+        // Cambialo para que verifiques con fold! :D
+    }
+
+    @Test
+    public void testCombineWithAnInvalid2(){
+
+        Validation<Error,String> valid = Validation.valid("Lets");
+        Validation<Error,String> valid2 = Validation.valid("Go!");
+        Validation<Error, String> invalid = Validation.invalid(new Error("Stop!"));
+
+        Validation<Seq<Error>, String> finalValidation = Validation.
+                combine(valid, invalid , valid2).ap((v1,v2,v3) -> v1 + v2 + v3);
+
+        finalValidation.fold(
+                s->{
+                    System.out.println("-----------------------------"+s);
+                    assertFalse(s.contains(new Error("Stop!")));
+                    return s.size();
+                },
+                x->{
+                    return 1;
+                }
+        );
 
         assertEquals("Failure - Combine with an invalid Validation didn't return the error",
                 "Stop!",
@@ -235,6 +281,7 @@ public class ValidationSuite
                 result8.ap(TestValidation::new).toString());
     }
 
+
     /**
      *  Me permite recorrer una coleccion de Validation y operarlos
      */
@@ -256,6 +303,45 @@ public class ValidationSuite
         assertEquals("Failure- Was not operated",
                 Arrays.asList("Operacion 0","Operacion 1","Operacion 2"),msg);
     }
+
+
+    class Ensayo{
+
+        int validos = 0;
+        int invalidos = 0;
+        public Validation<Error, Integer> validar(int i){
+            Either<Integer,Validation<Error,Integer>> retorno;
+            if(i%2 == 0 ){
+                validos++;
+                return (Validation.valid(i));
+
+            }
+            else{
+                invalidos ++;
+                return (Validation.invalid(new Error(":(")));
+            }
+        }
+
+
+
+    }
+
+    @Test
+    public void testCombineValidAndInvalidExecution() {
+        Ensayo e  = new Ensayo();
+        System.out.println("--------------testCombineValidAndInvalidExecution---------------");
+
+        Validation.combine(e.validar(1),e.validar(2),e.validar(3),e.validar(4));
+
+        assertEquals(e.validos,2);
+        assertEquals(e.invalidos,2);
+        System.out.println("--------------testCombineValidAndInvalidExecution---------------");
+
+    }
+
+
+
+
 
     /**
      *  El flatmap retorna otro validation, y los resultados de otros validation se pueden encadenar
