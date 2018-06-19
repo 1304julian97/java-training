@@ -3,7 +3,11 @@ package co.com.s4n.training.java.vavr;
 import io.vavr.Tuple;
 import io.vavr.Tuple2;
 import io.vavr.collection.List;
+import io.vavr.control.Option;
 import org.junit.Test;
+
+import java.util.NoSuchElementException;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static io.vavr.collection.Iterator.empty;
@@ -33,7 +37,18 @@ public class ListSuite {
     public void testZipOnEmptyList() {
         List<String> list = List.of();
         assertTrue("Failure - List should be empty",list.isEmpty());
-        list.zip(empty());
+
+    }
+
+    @Test
+    public void testingZip(){
+        List<Integer> li = List.of(1,2,3,4);
+        List<Integer> l2 = List.of(1,2,3);
+
+        List<Tuple2<Integer,Integer>> zip = li.zip(l2);
+        System.out.println("El Zip es:" + zip);
+
+        assertEquals(zip.headOption().getOrElse(new Tuple2(0,0)), new Tuple2(1,1));
     }
 
     @Test
@@ -52,6 +67,43 @@ public class ListSuite {
     }
 
     @Test
+    public void testTailListaDeUnElemento(){
+        List<Integer> lista = List.of(1);
+        List<Integer> listaTail = lista.tail();
+        assertTrue(listaTail.isEmpty());
+    }
+
+    @Test(expected =  java.util.NoSuchElementException.class)
+    public void testHeadDeUnaListaVacia(){
+        List<Integer> lista = List.of();
+        Integer primerValor = lista.head();
+
+    }
+
+    @Test
+    public void testHeadOptionDeUnaListaVacia(){
+        List<Integer> lista = List.of();
+        Option<Integer> enteroOption = lista.headOption();
+        int elementoOpcional = enteroOption.getOrElse(3);
+        assertEquals(3,elementoOpcional);
+    }
+
+    @Test
+    public void testHeadOptionDeUnaListaNoVacia(){
+        List<Integer> lista = List.of(1,2,3);
+        Option<Integer> enteroOption = lista.headOption();
+        int elementoOpcional = enteroOption.getOrElse(3);
+        assertEquals(1,elementoOpcional);
+    }
+
+    @Test
+    public void testHeadOptionDeUnaListaVaciaConOptionNone(){
+        List<Integer> lista = List.of();
+        Option<Integer> enteroOption = lista.headOption();
+        assertEquals(enteroOption,Option.none());
+    }
+
+    @Test
     public void testZip(){
         List<Integer> list1 = List.of(1,2,3);
         List<Integer> list2 = List.of(1,2,3);
@@ -67,7 +119,7 @@ public class ListSuite {
     public void testListIsImmutable() {
         List<Integer> list1 = List.of(0, 1, 2);
         List<Integer> list2 = list1.map(i -> i);
-        assertEquals(List.of(0, 1, 2),list1);
+        assertEquals(List.of(0,1,2),list1);
         assertNotSame(list1,list2);
     }
 
@@ -157,6 +209,34 @@ public class ListSuite {
                 Tuple.of("B", List.of("A")), list.pop2());
     }
 
+    @Test
+    public void popWithEmpty(){
+        List<Integer> l1 = List.of();
+        Option<List<Integer>> l2 = l1.popOption();
+        assertEquals(l2, Option.none());
+    }
+
+    @Test
+    public void popAndTail(){
+        List<Integer> l1 = List.of(1,2,3,4,5);
+        assertEquals(l1.tail(),l1.pop());
+        assertEquals(l1.tailOption(),l1.popOption());
+    }
+
+    @Test
+    public void pop2ConListaDeMasDeDosElementos(){
+        List<Integer> l1 = List.of(1,2,3,4,5,6,7,8,9,10);
+        Tuple2<Integer,List<Integer>> l2 = l1.pop2();
+        System.out.println(l2);
+        assertEquals(l2._1.intValue(),1);
+        assertEquals(l2._2,List.of(2,3,4,5,6,7,8,9,10));
+    }
+
+    @Test(expected = NoSuchElementException.class)
+    public void pop2ListaVacia()
+    {
+        Tuple2<Object,List<Object>> l1 = List.of().pop2();
+    }
     /**
      * Una lista de vavr se comporta como una pila ya que guarda y
      * retorna sus elementos como LIFO.
@@ -193,14 +273,45 @@ public class ListSuite {
      */
     @Test
     public void testListToTakeWhile() {
+        System.out.println("--------------------------------------testListToTakeWhile-------------------------------------");
         List<Integer> myList = List.ofAll(4, 6, 8, 5);
         List<Integer> myListOne = List.ofAll(2, 4, 3);
         List<Integer> myListRes = myList.takeWhile(j -> j < 8);
+        System.out.println(myListRes);
         List<Integer> myListResOne = myListOne.takeWhile(j -> j > 2);
+        System.out.println(myListResOne);
         assertTrue("List with values less than eight", myListRes.nonEmpty());
         assertEquals("List with length of two", 2, myListRes.length());
         assertEquals("List with last value six", new Integer(6), myListRes.last());
         assertTrue("List with values greater than two", myListResOne.isEmpty());
+        System.out.println("--------------------------------------testListToTakeWhile-------------------------------------");
+
+    }
+
+    @Test
+    public void testFold(){
+        List<Integer> l1 = List.of(1,2,3,4,5);
+        Integer r = l1.fold(0,(acc,el)->acc+el);
+        assertEquals(r.intValue(),15);
+    }
+
+    @Test
+    public void testFoldIzquierdaYDerechaDistintosResultadosDivision(){
+        List<Double> l1 = List.of(1.0,2.0,3.0,4.0,5.0);
+        Double l = l1.foldLeft(1.0,(acc,el)->acc/el);
+        Double r = l1.foldRight(1.0,(el,acc)->el/acc);
+        System.out.println("left "+l+" right "+r);
+        assertFalse(l.equals(r));
+    }
+
+
+    @Test
+    public void testFoldIzquierdaYDerechaDistintosResultadosString(){
+        List<String> l1 = List.of("Julian","Carvajal","Montoya");
+        String l = l1.foldLeft("",(acc,el)->acc+el);
+        String r = l1.foldRight("",(el,acc)->acc+el);
+        System.out.println("left "+l+" right "+r);
+        assertFalse(l.equals(r));
     }
 
     /**
