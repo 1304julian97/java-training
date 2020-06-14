@@ -101,6 +101,7 @@ public class CompletableFutureSuite {
             return "Hello";
         });
 
+
         try {
             String s = future.get(500, TimeUnit.MILLISECONDS);
             assertEquals(s, "Hello");
@@ -283,7 +284,7 @@ public class CompletableFutureSuite {
         CompletableFuture<String> completableFuture = CompletableFuture
                 .supplyAsync(() ->{
                     System.out.println(testName+" "+Thread.currentThread().getName());
-                    return "Hello";})
+                    return "Helloo";})
                 .thenCombine(
                         CompletableFuture.supplyAsync(() -> {
                             System.out.println(testName+" "+Thread.currentThread().getName());
@@ -295,7 +296,7 @@ public class CompletableFutureSuite {
                 );
 
         try {
-            assertEquals("Hello World", completableFuture.get());
+            assertEquals("Helloo World", completableFuture.get());
         }catch(Exception e){
             assertTrue(false);
         }
